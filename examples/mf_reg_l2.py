@@ -10,6 +10,7 @@ import numpy as np
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print("Using {} device".format(device))
 
+
 # Definition of the class
 class MatrixFactorization(torch.nn.Module):
     def __init__(self, num):
@@ -20,9 +21,10 @@ class MatrixFactorization(torch.nn.Module):
     def forward(self, aIdx, bIdx):
         return (self._A(aIdx) * self._B(bIdx)).sum(dim=1)
 
+
 # Train the model
 def train(M, numOfEpochs, model, optimizer, loss_func):
-
+    
   # Define the index list and shuffle the data
   idxList = torch.tensor([ [i, j] for i in range(M.shape[0]) for j in range(M.shape[1]) ])
   perm = np.random.permutation(len(idxList))
@@ -63,6 +65,7 @@ def train(M, numOfEpochs, model, optimizer, loss_func):
     #print(f"loss: {loss.item():>7f}")
 
   return lossList
+
 
 if __name__ == "__main__":
 
