@@ -13,7 +13,7 @@ print("Using {} device".format(device))
 
 # Definition of the class
 class MatrixFactorization(torch.nn.Module):
-    def __init__(self, num):
+    def __init__(self, dim, num):
         super().__init__()
         self._A = torch.nn.Embedding(num_embeddings=num, embedding_dim=dim, sparse=False)
         self._B = torch.nn.Embedding(num_embeddings=num, embedding_dim=dim, sparse=False)
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     M = torch.from_numpy(M)
 
     # Define the model, loss function and the optimizer
-    model = MatrixFactorization(num)
+    model = MatrixFactorization(dim=dim, num=num)
     loss_func = torch.nn.MSELoss()
     # optimizer = torch.optim.ASGD(model.parameters(), lr=learning_rate, weight_decay=l2_reg_coeff)
     optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, weight_decay=l2_reg_coeff)
