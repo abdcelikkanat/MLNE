@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
     idxList = torch.tensor([[l, i, j] for l in range(M.shape[0]) for i in range(M.shape[1]) for j in range(M.shape[2])])
     currentLoss = computeCurrentLoss(loss_func, M, idxList, model)
-    print(f"Total Loss: {currentLoss}")
+    print("Total Loss:" + currentLoss)
 
     # Print the reconstructed matrix
     modelParams = list(model.parameters())
