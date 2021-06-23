@@ -24,50 +24,64 @@ class MatrixFactorization(torch.nn.Module):
 
 
 # Compute the current loss
-def computeCurrentLoss(loss_func, M, idxList, model):
+def computeCurrentLoss(loss_func, M, model):
     loss = 0
-    for idx in idxList:
-        layerIdx = torch.LongTensor([idx[0]])
-        aIdx = torch.LongTensor([idx[1]])
-        bIdx = torch.LongTensor([idx[2]])
-        predictedValue = model(layerIdx, aIdx, bIdx)
-        correctValue = torch.FloatTensor([M[idx[0], idx[1], idx[2]]])
-        loss += loss_func(predictedValue, correctValue)
+    for layerIdx in range(M.shape[0]):
+        for rowIdx in range(M.shape[1]):
+            for columnIdx in range(M.shape[2]):
+                layerIdx = torch.LongTensor([layerIdx])
+                aIdx = torch.LongTensor([rowIdx])
+                bIdx = torch.LongTensor([columnIdx])
+                predictedValue = model(layerIdx, aIdx, bIdx)
+                correctValue = torch.FloatTensor([M[layerIdx, rowIdx, columnIdx]])
+                loss += loss_func(predictedValue, correctValue)
 
     return loss
 
 
 # Train the model
 def train(M, numOfEpochs, model, optimizer, loss_func):
+
+    '''
     # Define the index list and shuffle the data
     idxList = torch.tensor([[l, i, j] for l in range(M.shape[0]) for i in range(M.shape[1]) for j in range(M.shape[2])])
     perm = np.random.permutation(len(idxList))
     idxList = idxList[perm]
+    '''
+    layer_indices = np.arange(M.shape[0])
+    row_indices = np.arange(M.shape[1])
+    column_indices = np.arange(M.shape[2])
 
     lossList = []
     for e in range(numOfEpochs):
 
-        for idx in idxList:
-            # Set gradients to zero
-            optimizer.zero_grad()
+        np.random.shuffle(layer_indices)
+        np.random.shuffle(row_indices)
+        np.random.shuffle(column_indices)
 
-            # Turn data into tensors
-            correctValue = torch.FloatTensor([M[idx[0], idx[1], idx[2]]])
-            layerIdx = torch.LongTensor([idx[0]])
-            aIdx = torch.LongTensor([idx[1]])
-            bIdx = torch.LongTensor([idx[2]])
+        for layerIdx in layer_indices:
+            for rowIdx in row_indices:
+                for colIdx in column_indices:
+                    # Set gradients to zero
+                    optimizer.zero_grad()
 
-            # Predict and calculate loss
-            predictedValue = model(layerIdx, aIdx, bIdx)
-            loss = loss_func(predictedValue, correctValue)
+                    # Turn data into tensors
+                    correctValue = torch.FloatTensor([M[layerIdx, rowIdx, colIdx]])
+                    layerIdx = torch.LongTensor([layerIdx])
+                    aIdx = torch.LongTensor([rowIdx])
+                    bIdx = torch.LongTensor([colIdx])
 
-            # Backpropagate
-            loss.backward()
+                    # Predict and calculate loss
+                    predictedValue = model(layerIdx, aIdx, bIdx)
+                    loss = loss_func(predictedValue, correctValue)
 
-            # Update the parameters
-            optimizer.step()
+                    # Backpropagate
+                    loss.backward()
 
-        currentLoss = computeCurrentLoss(loss_func, M, idxList, model)
+                    # Update the parameters
+                    optimizer.step()
+
+        currentLoss = computeCurrentLoss(loss_func, M, model)
         lossList.append(currentLoss)
 
         # print(f"Epoch {e+1}\n-------------------------------")
@@ -116,7 +130,7 @@ if __name__ == "__main__":
     print(M)
 
     idxList = torch.tensor([[l, i, j] for l in range(M.shape[0]) for i in range(M.shape[1]) for j in range(M.shape[2])])
-    currentLoss = computeCurrentLoss(loss_func, M, idxList, model)
+    currentLoss = computeCurrentLoss(loss_func, M, model)
     print(f"Total Loss: {currentLoss}")
 
     # Print the reconstructed matrix
